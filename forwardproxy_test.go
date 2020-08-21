@@ -32,7 +32,7 @@ import (
 	_ "github.com/caddyserver/caddy/caddyhttp/httpserver"
 	_ "github.com/caddyserver/caddy/caddyhttp/redirect"
 	_ "github.com/caddyserver/caddy/caddyhttp/root"
-	"github.com/caddyserver/forwardproxy/httpclient"
+	"github.com/pasientskyhosting/forwardproxy/httpclient"
 	"golang.org/x/net/http2"
 )
 

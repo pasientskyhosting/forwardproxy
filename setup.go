@@ -33,7 +33,7 @@ import (
 
 	"github.com/caddyserver/caddy"
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
-	"github.com/caddyserver/forwardproxy/httpclient"
+	"github.com/pasientskyhosting/forwardproxy/httpclient"
 	"golang.org/x/net/proxy"
 )
 

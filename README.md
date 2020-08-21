@@ -1,6 +1,6 @@
 # Secure forward proxy plugin for the Caddy web server
 
-[![Build Status](https://travis-ci.org/caddyserver/forwardproxy.svg?branch=master)](https://travis-ci.org/caddyserver/forwardproxy)  
+[![Build Status](https://travis-ci.org/pasientskyhosting/forwardproxy.svg?branch=master)](https://travis-ci.org/pasientskyhosting/forwardproxy)  
 [![Join the chat at https://gitter.im/forwardproxy/Lobby](https://badges.gitter.im/forwardproxy/Lobby.svg)](https://gitter.im/forwardproxy/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
@@ -148,7 +148,7 @@ Don't forget to add `http.forwardproxy` plugin.
 
 0. Install latest Golang 1.12 or above and set export GO111MODULE=on
 1. ```bash
-   go install github.com/caddyserver/forwardproxy/cmd/caddy
+   go install github.com/pasientskyhosting/forwardproxy/cmd/caddy
    ```   
    Built `caddy` binary will be stored in $GOPATH/bin.  
 

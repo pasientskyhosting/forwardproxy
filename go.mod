@@ -1,8 +1,9 @@
-module github.com/caddyserver/forwardproxy
+module github.com/pasientskyhosting/forwardproxy
 
 go 1.12
 
 require (
-	github.com/mholt/caddy v1.0.0
-	golang.org/x/net v0.0.0-20190424112056-4829fb13d2c6
+	github.com/caddyserver/caddy v1.0.5
+	github.com/caddyserver/forwardproxy v0.0.0-20191002195248-247c0bafaabd
+	golang.org/x/net v0.0.0-20191027093000-83d349e8ac1a
 )

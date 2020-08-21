@@ -34,7 +34,7 @@ import (
 	"time"
 
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
-	"github.com/caddyserver/forwardproxy/httpclient"
+	"github.com/pasientskyhosting/forwardproxy/httpclient"
 )
 
 type ForwardProxy struct {
