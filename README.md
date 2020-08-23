@@ -20,6 +20,7 @@ Open a block for more control; here's an example of all properties in use (note 
 
 ```
 forwardproxy {
+    basicexternal https://my-auth.endpoint/auth/verify?access_token=
     basicauth user1 0NtCL2JPJBgPPMmlPcJ
     basicauth user2 密码
     ports     80 443
@@ -46,8 +47,12 @@ forwardproxy {
 
 ##### Security
 
+- **basicexternal [URL]**  
+External endpoint to validate basic HTTP auth credentials. This property may only be used once and cannot be used in conjuction with `basicauth`  
+_Default: no authentication required._
+
 - **basicauth [user] [password]**  
-Sets basic HTTP auth credentials. This property may be repeated multiple times. Note that this is different from Caddy's built-in `basicauth` directive. BE SURE TO CHECK THE NAME OF THE SITE THAT IS REQUESTING CREDENTIALS BEFORE YOU ENTER THEM.  
+Sets basic HTTP auth credentials. This property may be repeated multiple times. This property cannot be used in conjuction with `basicexternal`. Note that this is different from Caddy's built-in `basicauth` directive. BE SURE TO CHECK THE NAME OF THE SITE THAT IS REQUESTING CREDENTIALS BEFORE YOU ENTER THEM.  
 _Default: no authentication required._
 
 - **probe_resistance [secretlink.tld]**  
