@@ -35,6 +35,7 @@ import (
 
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/pasientskyhosting/forwardproxy/httpclient"
+	"github.com/tidwall/gjson"
 )
 
 type ForwardProxy struct {
@@ -42,9 +43,9 @@ type ForwardProxy struct {
 
 	authRequired    bool
 	authCredentials [][]byte // slice with base64-encoded credentials
-
-	hideIP  bool
-	hideVia bool
+	authURL         string
+	hideIP          bool
+	hideVia         bool
 
 	pacFilePath string
 
@@ -162,6 +163,55 @@ func serveHijack(w http.ResponseWriter, targetConn net.Conn) (int, error) {
 	}
 
 	return 0, dualStream(targetConn, clientConn, clientConn)
+}
+
+// Returns nil error on successful credentials check.
+func (fp *ForwardProxy) checkCredentialsExternal(r *http.Request) error {
+	pa := strings.Split(r.Header.Get("Proxy-Authorization"), " ")
+	if len(pa) != 2 {
+		return errors.New("Proxy-Authorization is required! Expected format: <type> <credentials>")
+	}
+	if strings.ToLower(pa[0]) != "basic" {
+		return errors.New("Auth type is not supported")
+	}
+	payload, _ := base64.StdEncoding.DecodeString(pa[1])
+	pair := strings.SplitN(string(payload), ":", 2)
+	if len(pair) != 2 {
+		return errors.New("Missing token or username")
+	}
+	// call the auth endpoint
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+	res, err := client.Get(fp.authURL + pair[1])
+	if err != nil {
+		urlErr := err.(*url.Error)
+		if urlErr.Timeout() {
+			return errors.New("Timeout occurred calling auth endpoint")
+		} else {
+			return errors.New("An error occurred calling the auth endpoint")
+		}
+	}
+	defer res.Body.Close()
+	data, _ := ioutil.ReadAll(res.Body)
+	// check for errors in the json response
+	if gjson.GetBytes(data, "error").Exists() {
+		return errors.New(gjson.GetBytes(data, "error_description").String())
+	}
+	// check the token type
+	tokenType := gjson.GetBytes(data, "tokenType")
+	if tokenType.String() == "serviceProviderToken" {
+		// Check module access
+		access := gjson.GetBytes(data, `accessContext.moduleAccesses.#(id="ps_norwegian_healthcare_integration_proxy")`)
+		if access.Exists() {
+			// token all good
+			return nil
+		} else {
+			return errors.New("Missing permission ps_norwegian_healthcare_integration_proxy")
+		}
+	} else {
+		return errors.New(tokenType.String() + " is an unsupported token type")
+	}
 }
 
 // Returns nil error on successful credentials check.
@@ -291,7 +341,11 @@ func (fp *ForwardProxy) dialContextCheckACL(ctx context.Context, network, hostPo
 func (fp *ForwardProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	var authErr error
 	if fp.authRequired {
-		authErr = fp.checkCredentials(r)
+		if len(fp.authURL) > 0 {
+			authErr = fp.checkCredentialsExternal(r)
+		} else {
+			authErr = fp.checkCredentials(r)
+		}
 	}
 	if fp.probeResistEnabled && len(fp.probeResistDomain) > 0 && stripPort(r.Host) == fp.probeResistDomain {
 		return serveHiddenPage(w, authErr)

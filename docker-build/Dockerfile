@@ -1,11 +1,11 @@
 FROM alpine:3.6
 
 LABEL description="Docker image for caddy+forwardproxy plugin."
-LABEL maintainer="SergeyFrolov@colorado.edu"
+LABEL maintainer="cj@patientsky.com"
 
 RUN apk add --no-cache ca-certificates bash curl
 
-RUN curl --fail https://getcaddy.com | bash -s http.forwardproxy
+COPY bin/caddy /bin/
 
 COPY gen_caddyfile_and_start.sh /bin/
 

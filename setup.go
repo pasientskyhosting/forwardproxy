@@ -61,9 +61,30 @@ func setup(c *caddy.Controller) error {
 		subdirective := c.Val()
 		args := c.RemainingArgs()
 		switch subdirective {
+		case "basicexternal":
+			if len(args) != 1 {
+				return c.ArgErr()
+			}
+			if len(fp.authURL) != 0 {
+				return c.Err("basicexternal subdirective specified twice")
+			}
+			if len(fp.authCredentials) != 0 {
+				return c.Err("basicexternal subdirective cannot be used in conjunction with basicauth")
+			}
+			if len(args[0]) == 0 {
+				return c.Err("empty external auth URL not allowed")
+			}
+			if !IsURL(args[0]) {
+				return c.Err(args[0] + " is not a valid URL")
+			}
+			fp.authURL = args[0]
+			fp.authRequired = true
 		case "basicauth":
 			if len(args) != 2 {
 				return c.ArgErr()
+			}
+			if len(fp.authURL) != 0 {
+				return c.Err("basicauth subdirective cannot be used in conjunction with basicexternal")
 			}
 			if len(args[0]) == 0 {
 				return c.Err("empty usernames are not allowed")
@@ -368,6 +389,12 @@ func readLinesFromFile(filename string) ([]string, error) {
 	}
 
 	return hostnames, scanner.Err()
+}
+
+// IsURL check if url is valid
+func IsURL(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
 // isValidDomainLite shamelessly rejects non-LDH names. returns nil if domains seems valid
