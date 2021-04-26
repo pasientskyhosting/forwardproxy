@@ -44,6 +44,8 @@ type ForwardProxy struct {
 	authRequired    bool
 	authCredentials [][]byte // slice with base64-encoded credentials
 	authURL         string
+	accessContext   string
+	accessContextID string
 	hideIP          bool
 	hideVia         bool
 
@@ -179,6 +181,10 @@ func (fp *ForwardProxy) checkCredentialsExternal(r *http.Request) error {
 	if len(pair) != 2 {
 		return errors.New("Missing token or username")
 	}
+	if fp.accessContext == "" || fp.accessContextID == "" {
+		fmt.Println("Missing access_context or access_context_id in caddyfile!")
+		return errors.New("Missing access_context or access_context_id in caddyfile")
+	}
 	// call the auth endpoint
 	client := &http.Client{
 		Timeout: 5 * time.Second,
@@ -202,14 +208,17 @@ func (fp *ForwardProxy) checkCredentialsExternal(r *http.Request) error {
 	tokenType := gjson.GetBytes(data, "tokenType")
 	if tokenType.String() == "serviceProviderToken" {
 		// Check module access
-		access := gjson.GetBytes(data, `accessContext.moduleAccesses.#(id="ps_norwegian_healthcare_integration_proxy")`)
+		access := gjson.GetBytes(data, fmt.Sprintf(`accessContext.%s.#(id="%s")`, fp.accessContext, fp.accessContextID))
+		// `accessContext.features.#(id="ps_norwegian_healthcare_integration_electronic_messages")`
 		if access.Exists() {
 			// token all good
 			return nil
 		} else {
-			return errors.New("Missing permission ps_norwegian_healthcare_integration_proxy")
+			fmt.Printf("Missing permission %s/n", fp.accessContextID)
+			return errors.New(fmt.Sprintf("Missing permission %s", fp.accessContextID))
 		}
 	} else {
+		fmt.Println(tokenType.String() + " is an unsupported token type")
 		return errors.New(tokenType.String() + " is an unsupported token type")
 	}
 }

@@ -79,6 +79,16 @@ func setup(c *caddy.Controller) error {
 			}
 			fp.authURL = args[0]
 			fp.authRequired = true
+		case "access_context":
+			if len(fp.accessContext) != 0 {
+				return c.Err("access_context specified twice")
+			}
+			fp.accessContext = args[0]
+		case "access_context_id":
+			if len(fp.accessContextID) != 0 {
+				return c.Err("access_context_id specified twice")
+			}
+			fp.accessContextID = args[0]
 		case "basicauth":
 			if len(args) != 2 {
 				return c.ArgErr()
