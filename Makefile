@@ -10,7 +10,7 @@ prep:
 binaries: linux64 darwin64
 
 build:
-	go build src/main.go
+	go build ./cmd/caddy
 
 linux64:
 	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o docker-build/bin/caddy ./cmd/caddy

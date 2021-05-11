@@ -214,7 +214,7 @@ func (fp *ForwardProxy) checkCredentialsExternal(r *http.Request) error {
 			// token all good
 			return nil
 		} else {
-			fmt.Printf("Missing permission %s/n", fp.accessContextID)
+			fmt.Println("Missing permission " + fp.accessContextID)
 			return errors.New(fmt.Sprintf("Missing permission %s", fp.accessContextID))
 		}
 	} else {
