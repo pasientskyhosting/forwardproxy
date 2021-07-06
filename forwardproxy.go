@@ -207,6 +207,14 @@ func (fp *ForwardProxy) checkCredentialsExternal(r *http.Request) error {
 	// check the token type
 	tokenType := gjson.GetBytes(data, "tokenType")
 	if tokenType.String() == "serviceProviderToken" {
+		// Check auth level
+		securityLevel := gjson.GetBytes(data, "accessContext.authenticationMethod.securityLevel")
+		if securityLevel.Exists() {
+			if securityLevel.String() != "4" {
+				fmt.Println("Insufficient security level " + securityLevel.String())
+				return errors.New(fmt.Sprintf("Insufficient security level: %s", securityLevel.String()))
+			}
+		}
 		// Check module access
 		access := gjson.GetBytes(data, fmt.Sprintf(`accessContext.%s.#(id="%s")`, fp.accessContext, fp.accessContextID))
 		// `accessContext.features.#(id="ps_norwegian_healthcare_integration_electronic_messages")`
